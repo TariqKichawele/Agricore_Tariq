@@ -7,7 +7,8 @@ services:
       POSTGRES_PASSWORD: agricore
       POSTGRES_DB: agricore
     ports:
-      - "5432:5432"
+      # Host 5432 is commonly taken by a local Postgres install.
+      - "5433:5432"
     volumes:
       - agricore_pgdata:/var/lib/postgresql/data
     healthcheck:

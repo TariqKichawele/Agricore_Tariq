@@ -12,14 +12,13 @@ fi
 # shellcheck disable=SC1091
 source .venv/bin/activate
 
-if [ ! -f "app/seed.py" ]; then
-  echo "Seed data is not implemented yet (Slice 8)."
-  echo "After Slice 1, this script will run: alembic upgrade head && python -m app.seed"
-  exit 0
-fi
+echo "==> Applying migrations"
+alembic upgrade head
 
-if [ -d "alembic" ]; then
-  alembic upgrade head
+if [ ! -f "app/seed.py" ]; then
+  echo "Full mock seed lands in Slice 8."
+  echo "Start the API once to create the bootstrap admin (see README)."
+  exit 0
 fi
 
 python -m app.seed

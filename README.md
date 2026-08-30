@@ -84,12 +84,23 @@ IAM needs `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` on the bucket. K
 
 ## API (current)
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| `GET` | `/health` | Liveness |
-| `POST` | `/api/v1/auth/login` | `{ "email", "password" }` → JWT + user |
-| `GET` | `/api/v1/auth/me` | Current user (Bearer token) |
-| `GET` | `/api/v1/auth/admin-check` | Admin-only RBAC smoke test |
+| Method | Path | Who | Notes |
+| --- | --- | --- | --- |
+| `GET` | `/health` | public | Liveness |
+| `POST` | `/api/v1/auth/login` | public | `{ "email", "password" }` → JWT + user |
+| `GET` | `/api/v1/auth/me` | any role | Current user |
+| `GET` | `/api/v1/auth/admin-check` | admin | RBAC smoke test |
+| `GET/POST` | `/api/v1/farms` | GET admin+auditor; POST admin | List / create |
+| `GET/PATCH/DELETE` | `/api/v1/farms/{id}` | GET admin+auditor; write admin | |
+| `GET/POST` | `/api/v1/users` | GET admin+auditor; POST admin | Admin creates accounts (no public signup) |
+| `GET/PATCH/DELETE` | `/api/v1/users/{id}` | GET admin+auditor; write admin | |
+| `GET/POST` | `/api/v1/equipment` | GET all roles (field hand: assigned only); POST admin | |
+| `GET/PATCH/DELETE` | `/api/v1/equipment/{id}` | GET scoped; write admin | |
+| `GET/POST` | `/api/v1/field-jobs` | GET all roles (field hand: own jobs); POST admin | |
+| `GET/PATCH/DELETE` | `/api/v1/field-jobs/{id}` | PATCH: admin any fields; field hand **status only** on own jobs; DELETE admin | |
+| `GET` | `/api/v1/audit-logs?q=` | admin+auditor | Search `action`, `entity_type`, `details` |
+
+Writes append an `audit_logs` row (`actor_id`, `action`, `entity_type`, `entity_id`, `details`). Unique email/serial conflicts return `409`.
 
 ```bash
 TOKEN=$(curl -sS -X POST http://localhost:8000/api/v1/auth/login \
@@ -100,13 +111,13 @@ TOKEN=$(curl -sS -X POST http://localhost:8000/api/v1/auth/login \
 curl -sS http://localhost:8000/api/v1/auth/me -H "Authorization: Bearer $TOKEN"
 ```
 
-CRUD, analytics, and report upload routes are added in later slices.
+Analytics and report uploads are later slices.
 
-## Roles (planned)
+## Roles
 
 - **Farm Operations Admin** — full CRUD (JWT `role=admin`)
-- **Field Hand** — assigned equipment, job status, service reports (`field_hand`)
-- **Auditor** — read-only dashboards, grids, audit logs (`auditor`)
+- **Field Hand** — assigned equipment, own job status (`field_hand`); service reports in Slice 4
+- **Auditor** — GET-only on farms/users/equipment/jobs plus audit log search (`auditor`)
 
 Dependencies: `get_current_user`, `require_roles(...)` in `backend/app/api/deps.py`.
 

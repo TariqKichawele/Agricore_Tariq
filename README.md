@@ -99,6 +99,11 @@ IAM needs `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` on the bucket. K
 | `GET/POST` | `/api/v1/field-jobs` | GET all roles (field hand: own jobs); POST admin | |
 | `GET/PATCH/DELETE` | `/api/v1/field-jobs/{id}` | PATCH: admin any fields; field hand **status only** on own jobs; DELETE admin | |
 | `GET` | `/api/v1/audit-logs?q=` | admin+auditor | Search `action`, `entity_type`, `details` |
+| `GET` | `/api/v1/analytics/low-fuel` | any role | Active units (`Idle` / `In-Use`) with `fuel_level < 20` |
+| `GET` | `/api/v1/analytics/co-location` | any role | Assigned units whose operator `farm_id` ≠ `facility_id` |
+| `GET` | `/api/v1/analytics/reliability` | any role | `Completed` / `Failed` job counts by equipment model |
+| `GET` | `/api/v1/analytics/maintenance-flags` | any role | Farms where maintenance units are **> 30%** of the fleet |
+| `GET` | `/api/v1/analytics/reporting-lines?supervisor_id=` | any role | Distinct field hands on that supervisor’s farms with `Pending` / `In-Progress` jobs |
 
 Writes append an `audit_logs` row (`actor_id`, `action`, `entity_type`, `entity_id`, `details`). Unique email/serial conflicts return `409`.
 
@@ -111,12 +116,12 @@ TOKEN=$(curl -sS -X POST http://localhost:8000/api/v1/auth/login \
 curl -sS http://localhost:8000/api/v1/auth/me -H "Authorization: Bearer $TOKEN"
 ```
 
-Analytics and report uploads are later slices.
+Report uploads are Slice 4. Full Prairie Crest mock data is Slice 8.
 
 ## Roles
 
 - **Farm Operations Admin** — full CRUD (JWT `role=admin`)
-- **Field Hand** — assigned equipment, own job status (`field_hand`); service reports in Slice 4
+- **Field Hand** — assigned equipment, own job status (`field_hand`); co-op analytics GET; service reports in Slice 4
 - **Auditor** — GET-only on farms/users/equipment/jobs plus audit log search (`auditor`)
 
 Dependencies: `get_current_user`, `require_roles(...)` in `backend/app/api/deps.py`.

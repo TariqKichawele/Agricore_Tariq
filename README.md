@@ -104,6 +104,9 @@ IAM needs `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` on the bucket. K
 | `GET` | `/api/v1/analytics/reliability` | any role | `Completed` / `Failed` job counts by equipment model |
 | `GET` | `/api/v1/analytics/maintenance-flags` | any role | Farms where maintenance units are **> 30%** of the fleet |
 | `GET` | `/api/v1/analytics/reporting-lines?supervisor_id=` | any role | Distinct field hands on that supervisor’s farms with `Pending` / `In-Progress` jobs |
+| `POST` | `/api/v1/field-jobs/{id}/reports` | admin; field hand on **own** jobs | Multipart `file` + optional `notes`. Images, `.txt`, `.pdf`. Max 10 MB. Stores object in private S3 |
+| `GET` | `/api/v1/field-jobs/{id}/reports` | same visibility as the job | List reports; `file_url` is a 1-hour presigned GET |
+| `GET` | `/api/v1/field-jobs/{id}/reports/{report_id}` | same visibility as the job | One report with a fresh presigned GET |
 
 Writes append an `audit_logs` row (`actor_id`, `action`, `entity_type`, `entity_id`, `details`). Unique email/serial conflicts return `409`.
 
@@ -116,13 +119,13 @@ TOKEN=$(curl -sS -X POST http://localhost:8000/api/v1/auth/login \
 curl -sS http://localhost:8000/api/v1/auth/me -H "Authorization: Bearer $TOKEN"
 ```
 
-Report uploads are Slice 4. Full Prairie Crest mock data is Slice 8.
+Report files stay in a private bucket; clients download via the presigned `file_url`. Full Prairie Crest mock data is Slice 8.
 
 ## Roles
 
 - **Farm Operations Admin** — full CRUD (JWT `role=admin`)
-- **Field Hand** — assigned equipment, own job status (`field_hand`); co-op analytics GET; service reports in Slice 4
-- **Auditor** — GET-only on farms/users/equipment/jobs plus audit log search (`auditor`)
+- **Field Hand** — assigned equipment, own job status (`field_hand`); co-op analytics GET; service reports on own jobs
+- **Auditor** — GET-only on farms/users/equipment/jobs/reports plus audit log search (`auditor`)
 
 Dependencies: `get_current_user`, `require_roles(...)` in `backend/app/api/deps.py`.
 

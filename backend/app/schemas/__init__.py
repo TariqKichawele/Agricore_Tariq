@@ -10,6 +10,7 @@ from app.schemas.auth import LoginRequest, LoginResponse, UserPublic
 from app.schemas.equipment import EquipmentCreate, EquipmentPublic, EquipmentUpdate
 from app.schemas.farm import FarmCreate, FarmPublic, FarmUpdate
 from app.schemas.field_job import FieldJobCreate, FieldJobPublic, FieldJobUpdate
+from app.schemas.service_report import ServiceReportPublic
 from app.schemas.user import UserCreate, UserUpdate
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
     "MaintenanceFlagsResponse",
     "ReliabilityResponse",
     "ReportingLinesResponse",
+    "ServiceReportPublic",
     "AuditLogPublic",
     "EquipmentCreate",
     "EquipmentPublic",

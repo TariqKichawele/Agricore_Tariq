@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -25,9 +26,24 @@ class Settings(BaseSettings):
     BOOTSTRAP_ADMIN_PASSWORD: str = "ChangeMeAdmin!"
     BOOTSTRAP_ADMIN_NAME: str = "Prairie Crest Admin"
 
+    @field_validator(
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_REGION",
+        "AWS_S3_BUCKET",
+        mode="before",
+    )
+    @classmethod
+    def strip_aws_values(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
+    @property
+    def s3_configured(self) -> bool:
+        return bool(self.AWS_ACCESS_KEY_ID and self.AWS_SECRET_ACCESS_KEY and self.AWS_S3_BUCKET)
 
 
 settings = Settings()

@@ -15,10 +15,5 @@ source .venv/bin/activate
 echo "==> Applying migrations"
 alembic upgrade head
 
-if [ ! -f "app/seed.py" ]; then
-  echo "Full mock seed lands in Slice 8."
-  echo "Start the API once to create the bootstrap admin (see README)."
-  exit 0
-fi
-
-python -m app.seed
+echo "==> Loading Prairie Crest mock data"
+python -m app.seed --reset

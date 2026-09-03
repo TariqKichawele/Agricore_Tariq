@@ -19,6 +19,7 @@ frontend/.vite/
 .env.local
 .env.*.local
 backend/.env
+backend/.env.production
 frontend/.env
 frontend/.env.local
 *.pem

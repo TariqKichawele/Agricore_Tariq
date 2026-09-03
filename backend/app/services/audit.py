@@ -31,6 +31,7 @@ def write_audit(
     entity_id: UUID | None = None,
     details: dict[str, Any] | None = None,
 ) -> AuditLog:
+    db.flush()
     entry = AuditLog(
         actor_id=actor.id if actor is not None else None,
         action=action,

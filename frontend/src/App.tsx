@@ -1,40 +1,38 @@
-import { useEffect, useState } from "react";
-import { Box, Chip, Container, Paper, Typography } from "@mui/material";
-
-type HealthState = "checking" | "ok" | "down";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AppLayout } from "./components/AppLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+import AuditLogsPage from "./pages/AuditLogsPage";
+import DashboardPage from "./pages/DashboardPage";
+import EquipmentPage from "./pages/EquipmentPage";
+import FarmsPage from "./pages/FarmsPage";
+import JobsPage from "./pages/JobsPage";
+import LoginPage from "./pages/LoginPage";
+import UsersPage from "./pages/UsersPage";
 
 export default function App() {
-  const [health, setHealth] = useState<HealthState>("checking");
-  const healthUrl = import.meta.env.VITE_API_HEALTH_URL ?? "http://localhost:8000/health";
-
-  useEffect(() => {
-    fetch(healthUrl)
-      .then((res) => (res.ok ? setHealth("ok") : setHealth("down")))
-      .catch(() => setHealth("down"));
-  }, [healthUrl]);
-
   return (
-    <Container maxWidth="md" sx={{ py: 8 }}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          AgriCore Command Center
-        </Typography>
-        <Typography color="text.secondary" paragraph>
-          Prairie Crest Agricultural Cooperative — local scaffold (Slice 0).
-        </Typography>
-        <Box>
-          <Chip
-            label={
-              health === "checking"
-                ? "API: checking"
-                : health === "ok"
-                  ? "API: healthy"
-                  : "API: unreachable"
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
             }
-            color={health === "ok" ? "success" : health === "checking" ? "default" : "warning"}
-          />
-        </Box>
-      </Paper>
-    </Container>
+          >
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/farms" element={<FarmsPage />} />
+            <Route path="/equipment" element={<EquipmentPage />} />
+            <Route path="/jobs" element={<JobsPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
